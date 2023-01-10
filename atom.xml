@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://plutoyty.github.io</id>
+    <title>blog</title>
+    <updated>2023-01-10T07:25:53.749Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://plutoyty.github.io"/>
+    <link rel="self" href="https://plutoyty.github.io/atom.xml"/>
+    <subtitle>温故而知新,十行一bug</subtitle>
+    <logo>https://plutoyty.github.io/images/avatar.png</logo>
+    <icon>https://plutoyty.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, blog</rights>
+    <entry>
+        <title type="html"><![CDATA[mysql密码忘记怎么办]]></title>
+        <id>https://plutoyty.github.io/post/al2PADjFe/</id>
+        <link href="https://plutoyty.github.io/post/al2PADjFe/">
+        </link>
+        <updated>2022-12-11T07:52:37.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ负载均衡]]></title>
+        <id>https://plutoyty.github.io/post/mwKclukbm/</id>
+        <link href="https://plutoyty.github.io/post/mwKclukbm/">
+        </link>
+        <updated>2022-11-28T11:52:39.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ集群的介绍和搭建]]></title>
+        <id>https://plutoyty.github.io/post/8NJl7BbJt/</id>
+        <link href="https://plutoyty.github.io/post/8NJl7BbJt/">
+        </link>
+        <updated>2022-11-27T13:45:20.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[常用解压命令]]></title>
+        <id>https://plutoyty.github.io/post/BJjPA3Cdw/</id>
+        <link href="https://plutoyty.github.io/post/BJjPA3Cdw/">
+        </link>
+        <updated>2022-11-27T11:34:11.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ单master]]></title>
+        <id>https://plutoyty.github.io/post/n-xaBNOra/</id>
+        <link href="https://plutoyty.github.io/post/n-xaBNOra/">
+        </link>
+        <updated>2022-11-25T07:16:24.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[高并发常用指标]]></title>
+        <id>https://plutoyty.github.io/post/goi7K4yjE/</id>
+        <link href="https://plutoyty.github.io/post/goi7K4yjE/">
+        </link>
+        <updated>2022-11-24T08:03:01.000Z</updated>
+    </entry>
+</feed>
