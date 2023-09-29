@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://plutoyty.github.io</id>
+    <title>blog</title>
+    <updated>2023-09-29T03:28:02.906Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://plutoyty.github.io"/>
+    <link rel="self" href="https://plutoyty.github.io/atom.xml"/>
+    <subtitle>温故而知新,十行一bug</subtitle>
+    <logo>https://plutoyty.github.io/images/avatar.png</logo>
+    <icon>https://plutoyty.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, blog</rights>
+    <entry>
+        <title type="html"><![CDATA[一次生产 Full GC 排查过程]]></title>
+        <id>https://plutoyty.github.io/post/qg7gisV15/</id>
+        <link href="https://plutoyty.github.io/post/qg7gisV15/">
+        </link>
+        <updated>2023-07-16T08:42:47.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Go生态系统常见的项目布局模式]]></title>
+        <id>https://plutoyty.github.io/post/QU8xDlK87/</id>
+        <link href="https://plutoyty.github.io/post/QU8xDlK87/">
+        </link>
+        <updated>2023-07-16T07:54:10.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Context剖析]]></title>
+        <id>https://plutoyty.github.io/post/R29SmM0SY/</id>
+        <link href="https://plutoyty.github.io/post/R29SmM0SY/">
+        </link>
+        <updated>2023-07-10T07:23:35.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[协程的取消]]></title>
+        <id>https://plutoyty.github.io/post/tfLs-thzd/</id>
+        <link href="https://plutoyty.github.io/post/tfLs-thzd/">
+        </link>
+        <updated>2023-07-08T02:24:24.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Golang笔试题]]></title>
+        <id>https://plutoyty.github.io/post/Aqt2OF9WV/</id>
+        <link href="https://plutoyty.github.io/post/Aqt2OF9WV/">
+        </link>
+        <updated>2023-02-23T11:58:11.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[大厂程序员是怎么用Redis的]]></title>
+        <id>https://plutoyty.github.io/post/tnXMTwDiO/</id>
+        <link href="https://plutoyty.github.io/post/tnXMTwDiO/">
+        </link>
+        <updated>2023-02-22T14:19:07.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[mysql密码忘记怎么办]]></title>
+        <id>https://plutoyty.github.io/post/al2PADjFe/</id>
+        <link href="https://plutoyty.github.io/post/al2PADjFe/">
+        </link>
+        <updated>2022-12-11T07:52:37.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ安装会碰到的问题]]></title>
+        <id>https://plutoyty.github.io/post/A35LlIHqN/</id>
+        <link href="https://plutoyty.github.io/post/A35LlIHqN/">
+        </link>
+        <updated>2022-11-28T11:52:56.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ负载均衡]]></title>
+        <id>https://plutoyty.github.io/post/mwKclukbm/</id>
+        <link href="https://plutoyty.github.io/post/mwKclukbm/">
+        </link>
+        <updated>2022-11-28T11:52:39.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RocketMQ集群的介绍和搭建]]></title>
+        <id>https://plutoyty.github.io/post/8NJl7BbJt/</id>
+        <link href="https://plutoyty.github.io/post/8NJl7BbJt/">
+        </link>
+        <updated>2022-11-27T13:45:20.000Z</updated>
+    </entry>
+</feed>

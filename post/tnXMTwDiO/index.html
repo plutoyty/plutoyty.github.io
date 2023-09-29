@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="什么是Redis
+为什么需要Redis？
+数据从单表，演进出了分库分表
+MySQL从单机演进出了集群
+数据量增长
+读写数据压力的不断增加
+
+数据分为冷数据和热数据，
+将热数据放到内存当中
+
+Redis基本原理
+数据从内存读写，数据保存到硬盘..." />
+    <meta name="keywords" content="Reids" />
+    <link rel="stylesheet" href="https://plutoyty.github.io/media/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://plutoyty.github.io/styles/main.css">
+    <!-- 代码渲染风格css -->
+    
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/styles/vs2015.min.css">
+    
+    <!-- 代码高亮插件 -->
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+    <!-- 代码复制插件 -->
+    <script src="https://cdn.jsdelivr.net/gh/850552586/ericamcdn@0.1/js/clipboard.min.js"></script>
+    <!-- live2d插件 -->
+    <link rel="stylesheet" href="https://plutoyty.github.io/media/css/live2d.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.13.1/css/all.min.css" rel="stylesheet">
+    <!-- 数学公式 -->
+    
+    <title>大厂程序员是怎么用Redis的</title>
+
+    <!-- 大纲索引css调整 -->
+    
+    <style>
+        .markdownIt-TOC {
+            margin-left: 28%;
+            padding-left: 2px;
+            width: 80%;
+        }
+
+        .markdownIt-TOC li {
+            padding-left: 8%;
+        }
+    </style>
+    
+</head>
+
+<body>
+    <div id="landlord">
+        <div class="message" style="opacity:0"></div>
+        <canvas id="live2d" width="240" height="250" class="live2d"></canvas>
+    </div>
+    <div id="domainname" style="display:none">https://plutoyty.github.io</div>
+    <div id="content">
+        <div>
+            <!----------- 移动端导航栏👇 ----------------->
+            <div id="bar">
+                <style>
+  .navmobile {
+    z-index: 15;
+    max-height: 40vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  @media screen and (max-width: 1200px) {
+    .navbar {
+      max-width: 100vw;
+    }
+  }
+
+  @media screen and (max-width:1200px) and (min-width: 768px) {
+    @media (min-width: 768px) {
+      .navbar-nav {
+        float: right;
+        margin: 0;
+      }
+    }
+  }
+
+  @media screen and (max-width:768px) {
+    .mbapspan {
+      padding: 0;
+    }
+  }
+</style>
+<div class="pjaxloading"  onclick="pjaxloadingClose()">
+  <div class="loadingbackground"></div>
+  <div id="loading">
+    <div class="loading">
+    </div>
+  </div>
+</div>
+<nav class="navbar navbar-inverse navbar-fixed-top navmobile">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#barmenu"
+        aria-expanded="false" id="barbutton">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a data-pjax class="navbar-brand" style="color:white" href="https://plutoyty.github.io">blog&nbsp;&nbsp;|</a>
+      <span class="navbar-brand mbapspan"><i id="mbaplayer" class="fa fa-play-circle-o" aria-hidden="true"
+          style="font-size: 28px;top: 12px;position: absolute;" onclick="aplayerPlay();"></i></span>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="barmenu">
+      <ul class="nav navbar-nav">
+        
+        
+        <li>
+          <a data-pjax href="/" style="color:white">
+            首页
+          </a>
+        </li>
+        
+        
+        
+        <li>
+          <a data-pjax href="/archives" style="color:white">
+            归档
+          </a>
+        </li>
+        
+        
+        
+        <li>
+          <a data-pjax href="/tags" style="color:white">
+            标签
+          </a>
+        </li>
+        
+        
+        
+        <li>
+          <a data-pjax href="/post/about" style="color:white">
+            关于
+          </a>
+        </li>
+        
+        
+        
+        
+          
+        <li><a data-pjax href="https://plutoyty.github.io/friends" style="color:white">友链</a></li>
+
+        
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+
+
+  <!-- 引入jQuery核心js文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+  <script>
+    let btstate = false;
+    var bt = $("#barbutton");
+    var bm = $("#barmenu");
+    bt.click(function () {
+      dropdown();
+    })
+    function dropdown() {
+      console.log(btstate);
+      //下拉
+      if (btstate == false) {
+        bt.removeClass("collapsed");
+        bt.attr("aria-expanded", "true");
+        bm.attr("aria-expanded", "true")
+        bm.fadeIn(700);
+        btstate = true;
+      }
+      else {
+        bt.addClass("collapsed");
+        bt.attr("aria-expanded", "false");
+        bm.removeClass("in");
+        bm.hide();
+        bm.attr("aria-expanded", "false");
+        btstate = false;
+      }
+    }
+  </script> 
+            </div>
+            <!----------- 移动端导航栏👆 ----------------->
+
+            <!--------------- pc端菜单栏👇 ---------------->
+            <div class="side"><head>
+    <link rel="stylesheet" href="https://plutoyty.github.io/media/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://plutoyty.github.io/styles/main.css">
+    
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/styles/vs2015.min.css">
+    
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/850552586/ericamcdn@0.1/js/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://plutoyty.github.io/media/css/live2d.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.13.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- fancybox -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+    <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+
+    <!--------- 数学公式👇---- -->
+    
+    <!--------- 数学公式👆----------------- -->
+    <!--------- daovocie功能👇 ------------------->
+    
+    <!--------- daovocie功能👆 ------------------->
+    <!-- -----------------twikoo评论系统引入👇 --------->
+    <script src="https://cdn.jsdelivr.net/npm/twikoo@1.3.1/dist/twikoo.all.min.js"></script>
+    <!-- -----------------twikoo评论系统引入👆 --------->
+    <!---------------- leancloud api 功能依赖引入👇 -------->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.13.0/dist/av-min.js"></script>
+    <!---------------- leancloud api 功能依赖引入👆 -------->
+    <!------------------ valine评论系统引入👇 ------------------>
+    <script src="https://plutoyty.github.io/media/js/valine.min.js"></script>
+    <!------------------ valine评论系统引入👆 ------------------>
+    <!---------------- 今日诗词api功能依赖👇 ----------------------->
+    <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
+    <!---------------- 今日诗词api功能依赖👆 ----------------------->
+    <!---------------- 今日诗词api功能依赖👇 ----------------------->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ispeak-bber/ispeak-bber.min.js" charset="utf-8"></script>
+    <!---------------- 哔哔功能依赖👆 ----------------------->
+
+
+</head>
+
+<style>
+    body {
+        overflow-x: hidden;
+        height: 100vh;
+        overflow-y: scroll;
+        cursor: url("https://plutoyty.github.io/media/images/mouse_cursor.png"), auto
+    }
+</style>
+
+<body>
+    <!--=------ 页面加载动态画面👇 --------------->
+    <div class="pjaxloading" onclick="pjaxloadingClose()">
+        <div class="loadingbackground"></div>
+        <div id="loading-aname">
+            <div class="loading-aname">
+            </div>
+        </div>
+    </div>
+    <!--=------ 页面加载动态画面👆 --------------->
+
+    <!--------------- 左侧菜单栏👇 ------------------------>
+    
+    <div id=side>
+        <div class="r_m_div">
+            <a onclick="showAaplayer()"><i style="font-size: 20px;"><img
+                        src='https://plutoyty.github.io/media/images/music.png' alt="音乐播放器" class="musicbtn"></i></a>
+        </div>
+        <div class="avatar-border">
+            <img src="https://plutoyty.github.io/images/avatar.png?v=1695742425522" class="avatar">
+        </div>
+        <div class="sitename">blog</div>
+        <span class="description" data-text='["温故而知新,十行一bug"]'>&nbsp;</span>
+        <div class="siteinfocontainer">
+            <span class="siteinfo">文章</span>
+            <span class="siteinfo">标签</span>
+        </div>
+        <div class="siteinfocontainer">
+            <span class="siteinfo" id="siteinfo-postsnum"></span>
+            <span class="siteinfo">6</span>
+        </div>
+        
+        <div class="search">
+            <!-- <input type="text" class="search-input" placeholder="标题搜索(●'◡'●)" /> -->
+            <input type="text" class="search-input" placeholder="标题搜索 ⚆_⚆ つ♡">
+            <div class="search-results"></div>
+        </div>
+        
+    <div class="share-button">
+        <span></span>
+        
+        <a href="github.com/plutoyty" target="_blank"><i style="font-size: 20px;"><img class="icon"
+                    src="https://plutoyty.github.io/media/images/github.png" alt=""></i></a>
+        
+        
+        <a onclick="showqq()"><i style="font-size: 20px;"><img class="icon"
+                    src="https://plutoyty.github.io/media/images/QQ.png" alt=""></i></a>
+        
+        
+        
+        
+        
+        
+        
+    </div>
+    <div id="qq" style="display:none">2631223275</div>
+    <!------------ 加载菜单按钮👇 ------------------------->
+    <div class="menucontainer">
+        
+        
+        <div class="mchocie description">
+            <a data-pjax href="/" class="menubutton" style="margin-right: 15px;">
+                <i><img class="icon menuicon" src="" alt="首页"></i>&nbsp;<span
+                    data-text="首页">首页</span>
+            </a>
+        </div>
+        
+        
+        
+        <div class="mchocie description">
+            <a data-pjax href="/archives" class="menubutton" style="margin-right: 15px;">
+                <i><img class="icon menuicon" src="" alt="归档"></i>&nbsp;<span
+                    data-text="归档">归档</span>
+            </a>
+        </div>
+        
+        
+        
+        <div class="mchocie description">
+            <a data-pjax href="/tags" class="menubutton" style="margin-right: 15px;">
+                <i><img class="icon menuicon" src="" alt="标签"></i>&nbsp;<span
+                    data-text="标签">标签</span>
+            </a>
+        </div>
+        
+        
+        
+        <div class="mchocie description">
+            <a data-pjax href="/post/about" class="menubutton" style="margin-right: 15px;">
+                <i><img class="icon menuicon" src="" alt="关于"></i>&nbsp;<span
+                    data-text="关于">关于</span>
+            </a>
+        </div>
+        
+        
+
+        
+        
+        
+        <div class="mchocie description">
+            <a data-pjax href="https://plutoyty.github.io/friends" class="menubutton" style="margin-right: 15px;">
+                <i><img class="icon menuicon" src="" alt="友人帐"></i>&nbsp;<span data-text="友人帐">友人帐</span>
+            </a>
+        </div>
+        
+        <!--  -->
+    </div>
+    <!------------ 加载菜单按钮👆 ------------------------->
+    <hr>
+    <style>
+    .copyright {
+        font-size: 15px;
+        color: #d9d9d9;
+    }
+
+
+    @media screen and (min-width: 1200px) {
+        .foot {
+            width: 100%;
+            height: 130px;
+        }
+    }
+
+    @media screen and (max-width: 1200px) {
+        .foot {
+            display: none;
+        }
+    }
+</style>
+
+<body>
+    <div class="foot">
+        <div id="footinfo">
+            <!--  | Theme: <a href="https://github.com/850552586/gridea-theme-fog">Fog</a> -->
+            <div>
+                
+                    <div id="sitegotimeDate">载入天数...</div>
+                    <div id="sitegotimes">载入时分秒...</div>
+                    <div id="cussitetime" style="display:none">
+                        11/24/2022
+                    </div>
+                    
+            </div>
+            <div>
+                
+            </div>
+            <div class="copyright" style="color:white;text-align: center;">
+                
+            </div>
+        </div>
+
+
+
+    </div>
+</body>
+
+    <script>
+        //----------------------站点运行时间
+        var now = new Date();
+
+        function createtime() {
+            var sitegotime = document.getElementById("cussitetime").innerHTML + " 00:00:00";
+            var grt = new Date(sitegotime); //此处修改你的建站时间或者网站上线时间 
+            now.setTime(now.getTime() + 250);
+            days = (now - grt) / 1000 / 60 / 60 / 24;
+            dnum = Math.floor(days);
+            hours = (now - grt) / 1000 / 60 / 60 - (24 * dnum);
+            hnum = Math.floor(hours);
+            if (String(hnum).length == 1) {
+                hnum = "0" + hnum;
+            }
+            minutes = (now - grt) / 1000 / 60 - (24 * 60 * dnum) - (60 * hnum);
+            mnum = Math.floor(minutes);
+            if (String(mnum).length == 1) {
+                mnum = "0" + mnum;
+            }
+            seconds = (now - grt) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+            snum = Math.round(seconds);
+            if (String(snum).length == 1) {
+                snum = "0" + snum;
+            }
+            document.getElementById("sitegotimeDate").innerHTML = "本站已安全运行 " + dnum + " 天 ";
+            document.getElementById("sitegotimes").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+        }
+
+        let intervalId = setInterval("createtime()", 250);
+    </script>
+    
+    </div>
+
+    <img class="moon" src="https://plutoyty.github.io/media/images/moon.png" onclick="moonlight()">
+    <script src="https://plutoyty.github.io/media/js/wordshow.js"></script>
+    
+    <!--------------- 左侧菜单栏👆 ------------------------>
+
+    <!----------------- 顶部菜单栏👇 ------------------------>
+    
+    <!----------------- 顶部菜单栏👆 ------------------------>
+
+<!--核心功能加载-->
+<script src="https://plutoyty.github.io/media/js/mainfunc.js"></script>
+
+<!------------- Fog1.0版本彩蛋👇 -------------->
+    <!-- <section id="terrestrial" class="popup">
+        <a href="#" class="back">&lt; back</a>
+    </section>
+
+    <div class="flycontainer">
+        <div class="flyword">御风飞行中...</div>
+    </div>
+
+    <script>
+        $("#fog_go").click(function(){fog_go()});
+        async function fog_go(){
+            $(".bars").hide()
+            $("#live2d").hide()
+            await sleep(3000);
+            $(".flycontainer").css("display","flex");
+            $(".popup").fadeOut(500)
+            await sleep(2000);
+            var sitename = "blog";
+            getFogUser(sitename);
+        }
+
+        function fog_goregis(){
+            var sitename = "blog";
+            var siteurl = "https://plutoyty.github.io";
+            regisFogUser(sitename,siteurl);
+        }
+        fog_goregis();
+    </script> -->
+<!------------- Fog1.0版本彩蛋👆 -------------->
+<script>
+    function change_topmenu(){
+        tmcolor = "antiquewhite"
+        tsnamecolor = "antiquewhite"
+        $(".navbar-inverse .navbar-nav>li>a").css("color",tmcolor)
+        $(".navbar-inverse .navbar-brand").css("color",tsnamecolor)
+        $(".navbar-fixed-top").css("border-radius","0 0 10px 10px")
+    }
+</script>
+
+<!------ 根据自定义配置声明变量👇 --------------------->
+    
+    <script>
+        var postnumChoice = false
+    </script>
+    
+    
+    <script>
+        var shareChoice = false
+    </script>
+    
+    
+    <script>
+        var donateChoice = false
+    </script>
+    
+    
+    <script>
+        var searchChoice = true
+    </script>
+    
+    <script>let postsnum = 0;</script>
+    <div id="side-posttitle" style="display: none;">
+    
+    
+    一次生产 Full GC 排查过程
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    Go生态系统常见的项目布局模式
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    Context剖析
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    协程的取消
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    Golang笔试题
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    大厂程序员是怎么用Redis的
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    mysql密码忘记怎么办
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    RocketMQ安装会碰到的问题
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    RocketMQ负载均衡
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    RocketMQ集群的介绍和搭建
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    常用解压命令
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    RocketMQ单master
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    高并发常用指标
+    <script>
+        postsnum += 1
+    </script>
+    
+    
+    
+    
+    </div>
+    
+        <script>
+            var menupos = 'left';
+            $("#siteinfo-postsnum").html(postsnum);
+        </script>
+    
+    <script>
+        let commentsHide = false
+    </script>
+    <!------ 根据自定义配置声明变量👆 --------------------->
+
+
+    <!----------根据自定义配置设置图标信息👇---------->
+    <script>
+        var icondict = new Array();
+    </script>
+    
+        
+            <script>
+                var iconname = "首页";
+                var iconurl = "Home";
+                icondict[iconname] = iconurl;
+            </script>
+        
+            <script>
+                var iconname = "归档";
+                var iconurl = "Archive";
+                icondict[iconname] = iconurl;
+            </script>
+        
+            <script>
+                var iconname = "标签";
+                var iconurl = "Tag";
+                icondict[iconname] = iconurl;
+            </script>
+        
+            <script>
+                var iconname = "关于";
+                var iconurl = "About";
+                icondict[iconname] = iconurl;
+            </script>
+        
+            <script>
+                var iconname = "友人帐";
+                var iconurl = "Friends";
+                icondict[iconname] = iconurl;
+            </script>
+        
+    
+    <!----------根据自定义配置设置图标信息👆---------->
+</body>
+
+<script src="https://plutoyty.github.io/media/share/dist/Share.js"></script>
+<!-- 页面pjax测试 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.pjax/2.0.1/jquery.pjax.js"></script>
+<!--确保jQuery已经在此之前加载-->
+<!-- <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script> -->
+<script src="https://plutoyty.github.io/media/js/all-pjax.js"></script>
+<script>
+    //-------------------------------说说功能👇--------------------------------------
+    let talksall = [];
+    let talks = [];
+    let talkindex = 0;
+    get();
+
+    function get() {
+        var t = JSON.parse('[{"author":"","img":"","text":"","time":""}]');
+        talkindex = t.length - 1;
+        for (var i = 0; i <= t.length - 1; i++) {
+            var d = {};
+            d["time"] = t[i].time;
+            d["author"] = t[i].author;
+            d["text"] = t[i].text;
+            d["img"] = t[i].img;
+            talksall.push(d);
+        }
+    }
+
+    function add() {
+        for (var i = talkindex; i >= 0 && i > talkindex - 3; i--) {
+            talks.push(talksall[i]);
+        }
+        talkindex = (talkindex - 3) >= 0 ? (talkindex - 3) : -1;
+        if (talkindex < 0) $("#getmorebt").hide();
+        show();
+    }
+
+    function show() {
+        var talkT = document.getElementById("talkContainer");
+        talkT.innerHTML = "";
+        for (var i = 0; i < talks.length; i++) {
+            if (talks[i].img != '') {
+                talkT.innerHTML += '\
+            <div class="talk" v-for="t in talks"> \
+                <span data-fancybox="images" href="' + talks[i].img + '"><img src="' + talks[i].img + '" class="talkimg"></span> \
+                <div class="ainfo">\
+                    <div class="ainfo-intro">\
+                        <div class="author">' + talks[i].author + '</div>·\
+                        <div class="time">' + talks[i].time + '</div>\
+                    </div>\
+                </div>\
+                <div class="talkcontent">' + talks[i].text + '\
+                </div\>\
+            ';
+            } else {
+                talkT.innerHTML += '\
+            <div class="talk" v-for="t in talks"> \
+                <div class="ainfo">\
+                    <div class="ainfo-intro">\
+                        <div class="author">' + talks[i].author + '</div>·\
+                        <div class="time">' + talks[i].time + '</div>\
+                    </div>\
+                </div>\
+                <div class="talkcontent">' + talks[i].text + '\
+                </div\>\
+            ';
+            }
+        }
+    }
+    //-------------------------------说说功能👆--------------------------------------
+</script>
+
+<!---->
+<script>
+    function replaceAvatar() {
+        twikoo_avatar = $(".tk-avatar-img");
+        for (var i = 0; i < twikoo_avatar.length; i++) {
+            var asrc = twikoo_avatar.eq(i).attr('src');
+            if (asrc.search('cn.gravatar.com') != -1) {
+                twikoo_avatar.eq(i).attr('src', 'https://plutoyty.github.io/media/images/comavatar.png');
+            }
+        }
+    }
+
+    function showWechat() {
+        var wechat = '';
+        alert("博主微信号：" + wechat);
+        return false;
+    }
+</script>
+
+<script>
+    /**
+     * https://github.com/tangkaichuan/gridea-search
+     */
+    // 检查缓存是否最新
+    function checkCache() {
+        var caches_postsnum = localStorage.getItem("postsnum");
+        var pt = document.getElementById("side-posttitle").innerHTML;
+        pt = pt.replace(/\s+/g, '').replace(/<script>.*?<\/script>/gi, "")
+        var ptlen = pt.length;
+        var ptlen_storage = localStorage.getItem("poststitlelen");
+        if (caches_postsnum != postsnum || ptlen != ptlen_storage) {
+            console.log("更新缓存");
+            return false
+        }
+        return true;
+    }
+
+    (function () {
+        var CACHES = checkCache()
+        if (!CACHES) {
+            var NOW = Date.now()
+            var API_CONTENT = '../api-content/index.html' + '?_=' + NOW
+            preload(API_CONTENT);
+            getContents(show_getContentresult);
+        }
+
+        function show_getContentresult(data) {
+            console.log("获取成功");
+            var postslen = data["posts"].length;
+            localStorage.setItem('postsnum', postslen);
+            var poststitlelen = 0;
+            var pt = document.getElementById("side-posttitle").innerHTML;
+            pt = pt.replace(/\s+/g, '').replace(/<script>.*?<\/script>/gi, "");
+            localStorage.setItem('poststitlelen', pt.length);
+        }
+
+
+
+        // preload
+        function preload(url) {
+            var preloadLink = document.createElement('link')
+            preloadLink.href = url
+            preloadLink.rel = 'preload'
+            preloadLink.as = 'fetch'
+            preloadLink.crossOrigin = 'anonymous'
+            document.head.appendChild(preloadLink)
+        }
+
+        // 异步 GET 请求
+        function get(obj) {
+            var xhr = new XMLHttpRequest()
+            xhr.open('get', obj.url, true)
+            xhr.send(null)
+            xhr.onreadystatechange = function () {
+                // 异步请求：响应状态为4，数据加载完毕
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        obj.success(xhr.responseText)
+                    } else {
+                        obj.error(xhr.status)
+                    }
+                }
+            }
+        }
+
+        // 获取博客全文 api
+        function getContents(callback) {
+            if (CACHES) {
+                callback(CACHES.contents)
+            } else {
+                get({
+                    url: API_CONTENT,
+                    success: function (data) {
+                        callback(JSON.parse(data));
+                        localStorage.setItem('ContentsCache', data);
+                        getStorageContent();
+                    }
+                })
+            }
+        }
+    })()
+    //------------------------核心功能--pjax全局渲染👇-------------------
+    let talkinit = false;
+    $(document).pjax('a[data-pjax]', '#main', {
+        fragment: '#main',
+        timeout: 8000
+    }).on('pjax:complete', function () {
+        //代码块高亮渲染
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
+        });
+        //文章热度
+        if(postnumChoice){
+            getHotnum();
+        }
+        //文章索引
+        toginit();
+        //清空搜索栏
+        if (searchChoice) {
+            searchInit();
+            searchInput.value = "";
+        }
+        var pl = window.location.pathname;
+        //说说更新
+        if (pl.search("talk") != -1 && !talkinit) {
+            add();
+            talkinit = true;
+        } else if (pl.search("talk") != -1) {
+            show();
+        }
+        if (pl.search("post") != -1) {
+            if (shareChoice)
+                shareInit();
+            if (donateChoice)
+                donateInit();
+            if ("default" == "default"&&!commentsHide) {
+                $("#comment").hide()
+                commentsHide = true
+            }
+            lazyload();
+            codeinit();
+            if ("default" == "twikoo") {
+                //twikoo头像更换
+                setTimeout(replaceAvatar, 3000);
+                setTimeout(replaceAvatar, 8000); //部分博主站点速度加载过慢，再添加一个延迟
+            }
+        }
+        if (btstate == true)
+            dropdown();
+    }).on('pjax:start', function () {
+        $(".pjaxloading").fadeIn(50);
+    }).on('pjax:end', function () {
+        $(".pjaxloading").fadeOut(50);
+    });
+    //------------------------核心功能--pjax全局渲染👆-------------------
+
+    //-------------------------------------------------搜索
+    // 获取搜索框、搜索按钮、清空搜索、结果输出对应的元素
+    if (searchChoice) {
+        var searchInput = document.querySelector('.search-input');
+        var searchResults = document.querySelector('.search-results');
+    }
+    // 申明保存文章的标题、链接、内容的数组变量
+    var searchValue = '',
+        arrItems = [],
+        arrLinks = [],
+        arrTitles = [],
+        arrContents = [],
+        arrResults = [],
+        indexItem = [],
+        itemLength = 0;
+    var tmpDiv = document.createElement('div');
+    tmpDiv.className = 'result-item';
+
+
+    function getStorageContent() {
+        var data = localStorage.getItem('ContentsCache');
+        data = JSON.parse(data);
+        posts = data["posts"];
+        for (var i = 0; i < posts.length; i++) {
+            arrLinks[i] = posts[i].link;
+            arrTitles[i] = posts[i].title;
+            arrContents[i] = posts[i].content;
+            itemLength++;
+        }
+    }
+    if (checkCache())
+        getStorageContent();
+    // 输入框内容变化后就开始匹配，可以不用点按钮
+    // 经测试，onkeydown, onchange 等方法效果不太理想，
+    // 存在输入延迟等问题，最后发现触发 input 事件最理想，
+    // 并且可以处理中文输入法拼写的变化
+    searchInput.oninput = function () {
+        setTimeout(searchConfirm, 0);
+    }
+    searchInput.onfocus = function () {
+        searchResults.style.display = 'block';
+    }
+
+    function searchConfirm() {
+        if (searchInput.value == '') {
+            searchResults.style.display = 'none';
+        } else if (searchInput.value.search(/^\s+$/) >= 0) {
+            // 检测输入值全是空白的情况
+            searchInit();
+            var itemDiv = tmpDiv.cloneNode(true);
+            itemDiv.innerText = '请输入有效内容...';
+            searchResults.appendChild(itemDiv);
+        } else {
+            // 合法输入值的情况
+            searchInit();
+            searchValue = searchInput.value;
+            // 在标题、内容中查找
+            searchMatching(arrTitles, arrContents, searchValue);
+        }
+    }
+
+    // 每次搜索完成后的初始化
+    function searchInit() {
+        arrResults = [];
+        indexItem = [];
+        searchResults.innerHTML = '';
+        searchResults.style.display = 'block';
+    }
+
+    function searchMatching(arr1, arr2, input) {
+        // 忽略输入大小写
+        input = new RegExp(input, 'i');
+        var step = 10;
+        // 在所有文章标题、内容中匹配查询值
+        for (i = 0; i < itemLength; i++) {
+            var indexContent = arr2[i].search(input);
+            //标题匹配
+            if (arr1[i].search(input) != -1) {
+                indexItem.push(i); // 保存匹配值的索引
+                if (indexContent != -1) {
+                    startindex = (indexContent - step) >= 0 ? (indexContent - step) : 0;
+                    var searchcontent = arr2[i].slice(indexContent - step, indexContent + 5)
+                    arrResults.push("....." + searchcontent + ".....");
+                } else
+                    arrResults.push("");
+            }
+            //内容匹配
+            else if (indexContent != -1) {
+                indexItem.push(i); // 保存匹配值的索引
+
+                startindex = (indexContent - step) >= 0 ? (indexContent - step) : 0;
+                var searchcontent = arr2[i].slice(indexContent - step, indexContent + 5)
+                arrResults.push("....." + searchcontent + ".....");
+            }
+        }
+
+        // 输出总共匹配到的数目
+        var totalDiv = tmpDiv.cloneNode(true);
+        totalDiv.innerHTML = '<b>总匹配：' + indexItem.length + ' 项<hr></b>';
+        searchResults.appendChild(totalDiv);
+
+        // 未匹配到内容的情况
+        if (indexItem.length == 0) {
+            var itemDiv = tmpDiv.cloneNode(true);
+            itemDiv.innerText = '未匹配到内容...';
+            searchResults.appendChild(itemDiv);
+        }
+
+        // 将所有匹配内容进行组合
+        for (i = 0; i < arrResults.length; i++) {
+            var itemDiv = tmpDiv.cloneNode(true);
+            itemDiv.innerHTML = '<a data-pjax class="searchresults" href="' + arrLinks[indexItem[i]] + '"><b>[' +
+                arrTitles[indexItem[i]] +
+                ']</b><p>' + arrResults[i] + '</p></a><hr />';
+            searchResults.appendChild(itemDiv);
+        }
+    }
+</script>
+
+
+
+<!--------------------- 菜单栏图标加载功能👇 ----------------------->
+<script>
+var menulist = $(".menuicon");
+var menulength = menulist.length;
+for (var i = 0; i < menulength; i++) {
+    var altname = menulist.eq(i).attr("alt");
+    var iconurl = icondict[altname];
+    if (iconurl == undefined || iconurl == '')
+        continue;
+    if (iconurl == 'Home') {
+        menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/Home.png");
+menulist.eq(i).show();
+} else if (iconurl == 'Archive') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/Archive.png");
+menulist.eq(i).show();
+} else if (iconurl == 'Tag') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/Tag.png");
+menulist.eq(i).show();
+} else if (iconurl == 'About') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/About.png");
+menulist.eq(i).show();
+} else if (iconurl == 'Talk') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/Talk.png");
+menulist.eq(i).show();
+} else if (iconurl == 'Friends') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/Friends.png");
+menulist.eq(i).show();
+} else if (iconurl == 'Fly') {
+menulist.eq(i).attr("src", "https://plutoyty.github.io/media/images/wind.png");
+menulist.eq(i).show();
+} else {
+menulist.eq(i).attr("src", iconurl);
+menulist.eq(i).show();
+}
+}
+</script>
+<!--------------------- 菜单栏图标加载功能👆 ----------------------->
+
+<script>
+    //--------------------bber-onetalk加载👇--------------------------------
+    function bberonetalkLoad(){
+        bberjsonurl = '';
+        if ( $("#bber-talk").length > 0 ) {
+        jsonUrl = bberjsonurl
+        $.getJSON(jsonUrl+"?t="+Date.parse( new Date()),function(res){
+        var bberHtml = ''
+        $.each(res.data, function(i, item){
+            d = new Date(item.date)
+            date = d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate() +' '+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds()
+            dataTime = '<span class="datatime">'+date+'</span>'
+            bberHtml += '<li class="item item-'+(i+1)+'">'+dataTime+'： <a data-pjax href="https://plutoyty.github.io/bber">'+item.content+'</a></li>'
+        });
+        $('#bber-talk').append('<span class="index-talk-icon"><svg viewBox="0 0 1024 1024" width="21" height="21"><path d="M184.32 891.667692c-12.603077 0-25.206154-2.363077-37.809231-7.876923-37.021538-14.966154-59.864615-49.624615-59.864615-89.009231v-275.692307c0-212.676923 173.292308-385.969231 385.969231-385.969231h78.76923c212.676923 0 385.969231 173.292308 385.969231 385.969231 0 169.353846-137.846154 307.2-307.2 307.2H289.083077l-37.021539 37.021538c-18.904615 18.116923-43.323077 28.356923-67.741538 28.356923zM472.615385 195.347692c-178.018462 0-322.953846 144.935385-322.953847 322.953846v275.692308c0 21.267692 15.753846 29.144615 20.48 31.507692 4.726154 2.363077 22.055385 7.876923 37.021539-7.08923l46.473846-46.473846c6.301538-6.301538 14.178462-9.452308 22.055385-9.452308h354.461538c134.695385 0 244.184615-109.489231 244.184616-244.184616 0-178.018462-144.935385-322.953846-322.953847-322.953846H472.615385z"></path><path d="M321.378462 512m-59.076924 0a59.076923 59.076923 0 1 0 118.153847 0 59.076923 59.076923 0 1 0-118.153847 0Z"></path><path d="M518.301538 512m-59.076923 0a59.076923 59.076923 0 1 0 118.153847 0 59.076923 59.076923 0 1 0-118.153847 0Z"></path><path d="M715.224615 512m-59.076923 0a59.076923 59.076923 0 1 0 118.153846 0 59.076923 59.076923 0 1 0-118.153846 0Z"></path></svg></span><ul class="talk-list">'+bberHtml+'</ul>')
+        //Lately({ 'target': '#bber-talk .datatime' });
+        });
+        function Roll (){
+        var list_li = $('.talk-list li'),cur_li = list_li.first(),last_li = list_li.last();
+        last_li.after(cur_li);
+        };
+        setInterval(Roll,3000);
+    }
+    }
+  //--------------------bber-onetalk加载👆--------------------------------
+</script>
+
+<script>
+    var ClicksideState = 1
+    var cur_readingmode = false
+    function readingmode(){
+        if (!cur_readingmode){
+            if(menupos == 'left'){
+                if(ClicksideState==1)
+                menu_openclose1()
+            }
+            $("#tab1").fadeOut(50)
+            $("#bg").fadeOut(50)
+            $(".navbar").fadeOut(50)
+            $(".markdownIt-TOC li a").css("color","black")
+            cur_readingmode = true
+        }else{
+            if(menupos == 'left'){
+                if(ClicksideState==0)
+                    menu_openclose1()
+            }
+            $("#tab1").fadeIn(50)
+            $("#bg").fadeIn(50)
+            $(".navbar").fadeIn(50)
+            $(".markdownIt-TOC li a").css("color","antiquewhite")
+            cur_readingmode = false  
+        }
+    }
+</script>
+
+
+<!----夜间模式👇-->
+<script>
+    var moonlightState = false
+    function moonlight(){
+        if(!moonlightState){
+            $("#bg").fadeOut(200)
+            $('body').css("background","rgba(0,0,0,0.8)")
+            $(".markdownIt-TOC li a").css("color","white")
+            $(".text p, .text ul").css("color","white")
+            $("#articlecontent").css("color","white")
+            $(".post-copyright").css("background","rgba(10,10,10,0.5)")
+            $('blockquote').css("background","rgba(10,10,10,0.6)")
+            $("#articlecontent").css("background","rgba(10,10,10,0.5)")
+            moonlightState = true
+            $(".moon").attr("src","https://plutoyty.github.io/media/images/sun.png")
+        }else{
+            $("#bg").show()
+            $(".markdownIt-TOC li a").css("color","antiquewhite")
+            $(".text p, .text ul").css("color","rgba(0, 0, 0, 0.7)")
+            $("#articlecontent").css("color","black")
+            $(".post-copyright").css("background","#f9f9f9")
+            $('blockquote').css("background","#eff8f0")
+            $("#articlecontent").css("background","white")
+            $(".moon").attr("src","https://plutoyty.github.io/media/images/moon.png")
+            $('body').css("background","white")
+            moonlightState = false
+        }
+    }
+</script>
+<!----夜间模式👆--></div>
+            <!--------------- pc端菜单栏👆 ---------------->
+
+            <!-- ----------------左侧菜单栏html 👇-------------------------------------->
+            
+            <div>
+                <div id="tab1" class="tab">
+                    <div class="bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="close"></div>
+                </div>
+                <div class="col-md-1 col-lg-3"></div>
+                <!-- main标签，pjax渲染时加载以下内容👇 -->
+                <div id="main" class="col-xs-12 col-sm-12 col-md-12 col-lg-7" style="padding:0;">
+                    <div class="readingmode" onclick="readingmode()">阅</div>
+                    <link rel="stylesheet" href="https://plutoyty.github.io/media/css/font-awesome.css">
+
+<body>
+    <div class="allcontent" id="postdetail">
+        <div class="postshow postpadding" style="padding-bottom: 0;">
+            
+            <div class="postdetailimg">
+                <img src="https://plutoyty.github.io/post-images/tnXMTwDiO.jpg" class="postimage" style="cursor:auto">
+            </div>
+            <div class="postinfo-detail">
+                <div class="postdate"><i class="fa fa-calendar"></i>2023-02-22</div>
+                <div class="poststatus postdate"><i class="fa fa-clock-o"></i> 8 min read</div>
+                <div class="posttag">
+                    
+                    <a data-pjax href="https://plutoyty.github.io/tag/SnVt9CHRb/" class="postlink">
+                        <i class="fa fa-tag"></i> Reids
+                    </a>
+                    
+                </div>
+            </div>
+            
+        <div id="articlecontent">
+            <div id="texttitle" style="text-align: center">
+                <h2 id="ptitle">大厂程序员是怎么用Redis的</h2>
+                <!-- id 将作为查询条件 -->
+                <div id="pl" style="display:none">https://plutoyty.github.io/post/tnXMTwDiO/</div>
+                <div id="rootaddr" style="display:none">https://plutoyty.github.io</div>
+                
+            </div>
+            <div class="text ">
+                <h2 id="什么是redis">什么是Redis</h2>
+<p>为什么需要Redis？</p>
+<p>数据从单表，演进出了分库分表<!-- more --><br>
+MySQL从单机演进出了集群<br>
+数据量增长<br>
+读写数据压力的不断增加</p>
+<figure data-type="image" tabindex="1"><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f19e01e8fd31466bb2688025d098c819~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<p>数据分为冷数据和热数据，<br>
+将热数据放到内存当中</p>
+<figure data-type="image" tabindex="2"><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2a2e43c7e55b44839fa98faa766a4eab~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<p>Redis基本原理</p>
+<p>数据从内存读写，数据保存到硬盘防止重启数据丢失</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a383fa330c84425698f3f9280c3e9a73~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+增量数据保存到AOF文件</p>
+<p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b2e14bb17321469e959c3a5275cdc686~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+全量数据保存到RDB文件中</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2ced985cd02648289834dda946656a5c~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+单线程处理所有命令</p>
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4f15a4891ad84850b81ba323a4b05d7b~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+重启时根据AOF和RDB文件恢复数据，先从RDB文件中去读取，然后去AOF中看看是不是有漏的，如果有漏的就补到RDB文件中去。</p>
+<p>为什么 Redis 是单线程的，却能有很好的性能(根据 Amdahl’s Law，优化耗时占比大的过程，才更有意义)，两句话概括是：Redis 利用了多路 I/O 复用机制，处理客户端请求时，不会阻塞主线程；Redis 单纯执行（大多数指令）一个指令不到 1 微秒，如此，单核 CPU 一秒就能处理 1 百万个指令（大概对应着几十万个请求吧），用不着实现多线程</p>
+<h2 id="redis应用案例">Redis应用案例</h2>
+<h3 id="1连续签到">1.连续签到</h3>
+<p>掘金每日连续签到<br>
+用户每日有一次签到的机会，如果断签，连续签到计数将归0。<br>
+连续签到的定义:每天必须在23:59:59前签到</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3af5e68cc2704b21b9ee02d89315ee44~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+<img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f93cdb2e0a1e4f2fb332b5010820d96f~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></p>
+<p><strong>String数据结构</strong><br>
+数据结构-sds</p>
+<ul>
+<li>可以存储字符串、数字、二进制数据</li>
+<li>通常和expire配合使用</li>
+</ul>
+<p>场景:存储计数、Session</p>
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/936015bc120f42898aa1b4b2224efd77~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+len 代表字符串长度</p>
+<p>alloc 表示buf的长度</p>
+<p>flags 表示sds的类型，因为存储空间不同，SDS类型也不同，有很多不同类型的SDS，例如16位、32位，和len用于获取value</p>
+<h3 id="2消息通知">2.消息通知</h3>
+<p>用list作为消息队列</p>
+<p>使用场景:<br>
+消息通知。<br>
+例如当文章更新时，将更新<br>
+后的文章推送到ES,用户就<br>
+能搜索到最新的文章数据</p>
+<figure data-type="image" tabindex="3"><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/78ffad3668f54b6cb2dbce030cb7713d~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<p><strong>List数据结构Quicklist</strong></p>
+<p>Quucklist由双向链表和listpack实现</p>
+<p>因为Redis尽可能的去节省空间，所有一个entry里面包含了很多节点<br>
+<img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ac34a7481e844584acf545ce70afb5b6~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></p>
+<p>listpack<br>
+<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ccf51fd49ea04c319fafe82c6f41e44b~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></p>
+<h3 id="3计数">3.计数</h3>
+<p>一个用户有多项计数需求， 可通过hash结构存储</p>
+<figure data-type="image" tabindex="4"><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6027fd3aeb3044af9ac3b7b9e85f0d69~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3346424269024bdabfafe2e1c1a01dff~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<p><strong>Hash数据结构Dict</strong></p>
+<figure data-type="image" tabindex="6"><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/691a845be17c49bc96f7eaec5328d4fd~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d4a17267a61143f499c0fcca6facfde7~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="4排行榜">4.排行榜</h3>
+<p>积分变化时，排名要实时变更<br>
+结合dict后，可实现通过key操作跳表的功能<br>
+ZINCRBY myzset 2 &quot;Alex<br>
+ZSCORE myzset &quot;Alex&quot;</p>
+<figure data-type="image" tabindex="8"><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/577d3935de2f4fb1be96b12b3559b7b7~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<p><strong>zsikplist数据结构</strong><br>
+跳表和dict实现</p>
+<figure data-type="image" tabindex="9"><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e60dfafd72c24c93939fdca534060605~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="5限流">5.限流</h3>
+<p>要求1秒内放行的请求为N,超过N则禁止访问</p>
+<p>Key: comment_freq_ limit_1671356046</p>
+<p>对这个Key调用incr,超过限制N则禁止访问<br>
+1671356046是当前时间戳</p>
+<figure data-type="image" tabindex="10"><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e88611578fed49998624b4b5d050a9bd~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="6分布式锁">6.分布式锁</h3>
+<p>并发场景，要求一次只能有一个协程执行。<br>
+执行完成后，其它等待中的协程才能执行。</p>
+<p><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/07663f33fe11450bb2eb6ff17b249368~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"><br>
+可以使用redis的setnx实现，<br>
+利用了两个特性</p>
+<ul>
+<li>Redis是单线程执行命令</li>
+<li>setnx只有未设置过才能执行成功</li>
+</ul>
+<pre><code>不是高可用的分布式锁实现
+
+该实现存在的问题:
+
+(1) 业务超时解锁，导致并发问题。业务执行时间超过锁超时时间
+
+(2) redis主备切换临界点问题。主备切换后，A持有的锁还未同步到新的主节点时，B可在新主节点获取锁，导致并发问题。
+
+(3) redis集群脑裂，导致出现多个主节点
+</code></pre>
+<h2 id="redis注意事项常出现的问题">Redis注意事项，常出现的问题</h2>
+<h3 id="大key热key问题">大key，热key问题</h3>
+<p><strong>大key的定义</strong></p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>大Key标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>String类型</td>
+<td>value的字节数大于10KB即为大key</td>
+</tr>
+<tr>
+<td>Hash/Set/Zset/list等复杂数据结构类型</td>
+<td>元素个数大于5000个或总value字节数大于10MB即为大key</td>
+</tr>
+</tbody>
+</table>
+<p><strong>大key的危害</strong></p>
+<ul>
+<li>读取成本高</li>
+<li>容易导致慢查询(过期、删除)</li>
+<li>主从复制异常，服务阻塞<br>
+无法正常响应请求</li>
+</ul>
+<p><strong>业务侧使用大Key的表现</strong></p>
+<p>请求Redis超时报错</p>
+<figure data-type="image" tabindex="11"><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e8709cb6f909459b8caf529882f7f95b~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="消除大key">消除大key</h3>
+<h4 id="拆分">拆分</h4>
+<p>将大key拆分为小key。例如一个String拆分成多个String<br>
+<img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7f27cf30dc8340929b4fb2c201fcbdd5~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></p>
+<h4 id="压缩">压缩</h4>
+<p>将value压缩后写入redis,读取时解压后再使用。压缩算法可以是gzip、snappy、lz4等。通常情况下，<br>
+一个压缩算法压缩率高、则解压耗时就长。需要对实际数据进行测试后，选择一个合适的算法。<br>
+如果存储的是JSON字符串，可以考虑使用MessagePack进行序列化。</p>
+<h3 id="集合类结构hash-list-set-set">集合类结构hash、list、 set、 set</h3>
+<ol>
+<li>拆分:可以用hash取余、位掩码的方式决定放在哪个key中</li>
+<li>区分冷热:如榜单列表场景使用zset,只缓存前10页数据，后续数据走db</li>
+</ol>
+<h3 id="热key">热key</h3>
+<p>热Key的定义<br>
+用户访问一个Key的QPS特别高，导致Server实例出现CPU负载突增或者不均的情况。<br>
+热key没有明确的标准，QPS 超过500就有可能被识别为热Key</p>
+<figure data-type="image" tabindex="12"><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c8643dcdb9ef4efab1da2504182a8f27~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="解决热key的方法">解决热key的方法</h3>
+<h4 id="1设置localcache">1.设置Localcache</h4>
+<p>在访问Redis前，在业务服务侧设置Localcache,降低访问Redis的QPS。LocalCache中 缓存过期或未命中，<br>
+则从Redis中将数据更新到ocalCache。Java的Guava、 Golang的Bigcache就 是这类LocalCache</p>
+<figure data-type="image" tabindex="13"><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b215699e92847f1921922b2065854e1~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h4 id="2拆分">2.拆分</h4>
+<p>将key:value这一个热Key复制写入多份，例如key1:value. key2:value,访问的时候访问多个key,但value是同一个，以此将qps分散到不同实例上，降低负载。代价是，更新时需要更新多个key,存在数据短暂不一致的风险</p>
+<figure data-type="image" tabindex="14"><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9e6e5382eba2454ca9cb5fe71cfeae1a~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h4 id="3-使用redis代理的热key承载能力">3. 使用Redis代理的热Key承载能力</h4>
+<p>字节跳动的Redis访问代理就具备热Key承载能力。本质上是结合了“热Key发现&quot;、&quot;LocalCache' 两个功能</p>
+<figure data-type="image" tabindex="15"><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/98b60c370e4440afb5efdc99219a7458~tplv-k3u1fbpfcp-watermark.image?" alt="image.png" loading="lazy"></figure>
+<h3 id="慢查询场景">慢查询场景</h3>
+<p>容易导致redis慢查询的操作</p>
+<ol>
+<li>批量操作一次性传 入过多的key/value,如mset/hmset/sadd/zadd等 O(n)操作建议单批次不要超过100，超过100之 后性能下降明显。</li>
+<li>zset大部分命令都是O(log(n))，当大小超过5k以上时，简单的zadd/zrem也可能导致慢查询</li>
+<li>操作的单个value过大，超过10KB。 也即，避免使用大Key</li>
+</ol>
+<h3 id="缓存穿透缓存雪崩">缓存穿透，缓存雪崩</h3>
+<p>缓存穿透:热点数据查询绕过缓存，直接查询数据库<br>
+缓存雪崩:大量缓存同时过期<br>
+缓存穿透的危害</p>
+<ol>
+<li>查询一个一定不存在的数据<br>
+通常不会缓存不存在的数据，<br>
+这类查询请求都会直接打到db，如果有系统bug或人为攻击，<br>
+那么容易导致db响应慢甚至宕机</li>
+<li>缓存过期时<br>
+在高并发场景下，一个热key如果过期，会有大量请求同时击穿至db,容易影响db性能和稳定。<br>
+同一时间有大量key集中过期时，也会导致大量请求落到db上，导致查询变慢，甚至出现db无法响应新的查询</li>
+</ol>
+<p><strong>如何减少缓存穿透</strong></p>
+<ol>
+<li>缓存空值<br>
+如一个不存在的userID。这个id在缓存和数据库中都不存在。则可以缓存一个空值，下次再查缓存直接反回空值。</li>
+<li>布隆过滤器<br>
+通过bloom filter算法来存储合法Key,得益于该算法超高的压缩率，只需占用极小的空间就能存储大量key值</li>
+</ol>
+<p><strong>如何避免缓存雪崩</strong></p>
+<ol>
+<li>缓存空值<br>
+将缓存失效时间分散开，比如在原有的失效时间基础上增加一个随机值，例如不同Key过期时间，<br>
+可以设置为10分1秒过期，10分23秒过期， 10分8秒过期。 单位秒部分就是随机时间，这样过期时间就分散了。<br>
+对于热点数据，过期时间尽量设置得长一些，冷门的数据可以相对设置过期时间短-些。</li>
+<li>使用缓存集群，避免单机宕机造成的缓存雪崩。</li>
+</ol>
+
+            </div>
+            <hr style="width: 80%;">
+            
+            <div class="postfooter">
+                <ul class="post-copyright">
+                    <li><strong>文章作者：</strong>plutoyty</li>
+            <li><strong>原文链接：</strong>https://plutoyty.github.io/post/tnXMTwDiO/</li>
+            <li><strong>版权声明：</strong>本博客所有文章除特别声明外，均采用<i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA
+                许可协议。转载请注明出处！</li>
+            </ul>
+        </div>
+        
+        <div id="otherpost">
+            
+            <a  data-pjax class="prev-post-pc" href="https://plutoyty.github.io/post/Aqt2OF9WV/"  style="color: black;">
+                <div id="ppcontainer">
+                    
+                    
+                    <img src="/media/images/custom-postdefaultimage.png" style="width: 100%;" class="opimg">
+                    
+                    
+                    <h4 class="optitle">Golang笔试题</h4>
+                </div>
+            </a>
+            <div class="prev-post">
+                上一篇 <a  data-pjax href="https://plutoyty.github.io/post/Aqt2OF9WV/">Golang笔试题</a>
+            </div>
+            
+            
+            <a data-pjax class="next-post-pc" href="https://plutoyty.github.io/post/al2PADjFe/"  style="color: black;">
+                <div id="npcontainer">
+                    
+                    
+                    <img src="/media/images/custom-postdefaultimage.png" style="width: 100%;" class="opimg">
+                    
+                    
+                    <h4 class="optitle">mysql密码忘记怎么办</h4>
+                </div>
+            </a>
+            <div class="next-post">
+                下一篇 <a  data-pjax href="https://plutoyty.github.io/post/al2PADjFe/">mysql密码忘记怎么办</a>
+            </div>
+            
+        </div>
+    </div>
+    </div>
+    </div>
+    <!-- 弹窗 -->
+    <div id="myModal" class="modal">
+        <img class="modal-content" id="img01">
+    </div>
+</body>
+<script>
+    //文章阅读热度
+    var pl = $("#pl").html();
+    var rootaddr = $("#rootaddr").html();
+    pl = pl.replace(rootaddr, "");
+    $("#hotnum").attr('id', pl);
+</script>
+                    <div class="toc-container">
+                        <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFredis">什么是Redis</a></li>
+<li><a href="#redis%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B">Redis应用案例</a>
+<ul>
+<li><a href="#1%E8%BF%9E%E7%BB%AD%E7%AD%BE%E5%88%B0">1.连续签到</a></li>
+<li><a href="#2%E6%B6%88%E6%81%AF%E9%80%9A%E7%9F%A5">2.消息通知</a></li>
+<li><a href="#3%E8%AE%A1%E6%95%B0">3.计数</a></li>
+<li><a href="#4%E6%8E%92%E8%A1%8C%E6%A6%9C">4.排行榜</a></li>
+<li><a href="#5%E9%99%90%E6%B5%81">5.限流</a></li>
+<li><a href="#6%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81">6.分布式锁</a></li>
+</ul>
+</li>
+<li><a href="#redis%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E5%B8%B8%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98">Redis注意事项，常出现的问题</a>
+<ul>
+<li><a href="#%E5%A4%A7key%E7%83%ADkey%E9%97%AE%E9%A2%98">大key，热key问题</a></li>
+<li><a href="#%E6%B6%88%E9%99%A4%E5%A4%A7key">消除大key</a>
+<ul>
+<li><a href="#%E6%8B%86%E5%88%86">拆分</a></li>
+<li><a href="#%E5%8E%8B%E7%BC%A9">压缩</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9B%86%E5%90%88%E7%B1%BB%E7%BB%93%E6%9E%84hash-list-set-set">集合类结构hash、list、 set、 set</a></li>
+<li><a href="#%E7%83%ADkey">热key</a></li>
+<li><a href="#%E8%A7%A3%E5%86%B3%E7%83%ADkey%E7%9A%84%E6%96%B9%E6%B3%95">解决热key的方法</a>
+<ul>
+<li><a href="#1%E8%AE%BE%E7%BD%AElocalcache">1.设置Localcache</a></li>
+<li><a href="#2%E6%8B%86%E5%88%86">2.拆分</a></li>
+<li><a href="#3-%E4%BD%BF%E7%94%A8redis%E4%BB%A3%E7%90%86%E7%9A%84%E7%83%ADkey%E6%89%BF%E8%BD%BD%E8%83%BD%E5%8A%9B">3. 使用Redis代理的热Key承载能力</a></li>
+</ul>
+</li>
+<li><a href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E5%9C%BA%E6%99%AF">慢查询场景</a></li>
+<li><a href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9">缓存穿透，缓存雪崩</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                    </div>
+                    <div class="tog">
+                        <div class="toggleContainer">
+                            <div class="toggle">
+                                <i class="fas fa-angle-double-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!---------------------------- 评论系统👇 ------------------------->
+                    <div id="comment" class="comment">
+                        <div class="commentcontainer">
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    <!---------------------------- 评论系统👆 ------------------------->
+                </div>
+                <!-- main标签，pjax渲染时加载以上内容👆 -->
+                <div class="col-md-1 col-lg-2"></div>
+                <div id="bg">
+                </div>
+            </div>
+            <!-- ----------------左侧菜单栏html 👆-------------------------------------->
+            
+        </div>
+        <!-- aplayer播放器加载👇 -->
+            
+            <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+</head>
+
+<body>
+    <div class="miniMode">
+        <meting-js id="myaplayer" server="netease" type="playlist" fixed="true" order="default" muted="muted">
+        </meting-js>
+    </div>
+</body>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+<script>
+    function aplayerInit() {
+        var aplayerid = "eeb3016e138c0061b15cd92eac87b218";
+        var aplayerserver = "netease";
+        var aplayerorder = "default";
+        var aplayerautoplay = "false";
+        var aplayer = $("#myaplayer");
+        aplayer.attr("server", aplayerserver);
+        aplayer.attr("id", aplayerid);
+        aplayer.attr("order", aplayerorder);
+        if (aplayerautoplay == "true")
+            aplayer.attr("autoplay", "true");
+    }
+    aplayerInit();
+</script>
+
+<script src="https://cdn.jsdelivr.net/gh/850552586/ericamcdn@0.1/js/Aplayer.min.js"></script>
+<!-- require MetingJS -->
+<script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+<script>
+    function aplayerbtnInit() {
+        var player = document.querySelectorAll('meting-js')[0].aplayer;
+        if(player==undefined)return false;
+        player.lrc.hide();
+        var mbabtn = $("#mbaplayer");
+        if (player.paused == false) {
+            mbabtn.removeClass("fa-play-circle-o");
+            mbabtn.addClass("fa-pause-circle");
+        } else {
+            mbabtn.addClass("fa-play-circle-o");
+            mbabtn.removeClass("fa-pause-circle");
+        }
+    }
+
+    function aplayerPlay() {
+        var player = document.querySelectorAll('meting-js')[0].aplayer;
+        var mbabtn = $("#mbaplayer");
+        if (player.paused == true) {
+            player.play();
+            mbabtn.removeClass("fa-play-circle-o");
+            mbabtn.addClass("fa-pause-circle");
+        } else {
+            player.pause();
+            mbabtn.addClass("fa-play-circle-o");
+            mbabtn.removeClass("fa-pause-circle");
+        }
+    }
+</script>
+            
+        <!-- aplayer播放器加载👆 -->
+    </div>
+    <!-- 背景图加载方式👇 -->
+    <div id="bgchoice" style="display: none">default
+                </div>
+                
+                <div id="bgurl" style="display:none">/media/images/custom-bgimage.png</div>
+                
+    <!-- 背景图加载方式👆 -->
+</body>
+
+<script>
+    //初始化
+    //更换twikoo头像
+    setTimeout(replaceAvatar,1000);
+    setTimeout(replaceAvatar,2000);
+    setTimeout(replaceAvatar,8000);
+    // --------为每张图片添加懒加载（lazyload）标签-->懒加载功能 👇------------
+    lazyload();
+    //为文章内所有代码块添加代码复制功能 👇
+    codeinit();
+    // ------代码高亮显示功能-------------
+    hljs.initHighlightingOnLoad();
+    if (shareChoice)
+        shareInit();
+    if (donateChoice)
+        donateInit();
+</script>
+
+<!------------------ 加载live2d模型功能（看板娘）👇 ---------------->
+
+<script type="text/javascript">
+    var message_Path = '/live2d/'
+    var home_Path = document.getElementById("domainname").innerHTML + "/"; //此处修改为你的域名，必须带斜杠
+</script>
+<script type="text/javascript" src="https://plutoyty.github.io/media/js/live2d.js"></script>
+<script type="text/javascript" src="https://plutoyty.github.io/media/live2d/js/message.js"></script>
+<script type="text/javascript">
+    loadlive2d("live2d", "https://plutoyty.github.io/media/live2d/assets/tororo.model.json");
+</script>
+
+<!------------------ 加载live2d模型功能（看板娘）👆 ---------------->
+
+
+<!----------------------- 返回顶部按钮功能👇 --------------------->
+<script>
+    $(function () {
+        $('.toggleContainer').click(function () {
+            $('html,body').animate({
+                scrollTop: '0px'
+            }, 800);
+        });
+        $(window).scroll(function () {
+            var st = $(window).scrollTop();
+            if (st > 30) {
+                $(".toggleContainer").fadeIn(400);
+            } else {
+                $(".toggleContainer").fadeOut(100);
+            }
+        });
+    });
+</script>
+<!----------------------- 返回顶部按钮功能👆 --------------------->
+
+
+<!------------ 加载全局背景图功能👇（开始时没有写好，这功能有点鸡肋/(ㄒoㄒ)/~~） -->
+<script>
+    var bgchoice = "default"
+    var bg = $('#bg');
+    var bgurl = document.getElementById("bgurl").innerHTML;
+    if (bgchoice == 'default')
+    {
+        for (var i = 0; i < 3; i++)
+            bgurl = bgurl.replace("\\", "/");
+        bgurl = "https://plutoyty.github.io/" + bgurl;
+    }
+    bg.css("background", "url('" + bgurl + "')");
+
+    window.onload = function () {
+        aplayerbtnInit();
+    }
+</script>
+<!------------ 加载全局背景图功能👆（开始时没有写好，这功能有点鸡肋/(ㄒoㄒ)/~~） -->
+
+
+
+
+<script src="https://plutoyty.github.io/media/js/index.js"></script>
+
+
+<script>
+    //加载后的事件同步（阅读量、移动端评论等
+    window.onload = function () {
+    //代码块高亮渲染
+    document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
+    });
+        getHotnum();
+        var sharepc = $(".share").eq(0).html();
+        $(".share").eq(1).html(sharepc);   //插件只会寻找一个分享标签渲染，所以需要手动添加到移动端
+        aplayerbtnInit();
+        $(".hljs").css({
+            "padding": "20px"
+        })
+    }
+</script>
+
+<!-- <script src="https://plutoyty.github.io/media/js/av-min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.13.0/dist/av-min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.6.1/dist/av-live-query-min.js"></script> -->
